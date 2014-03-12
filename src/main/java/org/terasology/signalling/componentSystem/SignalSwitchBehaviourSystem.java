@@ -6,7 +6,6 @@ import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.blockNetwork.ImmutableBlockLocation;
 import org.terasology.engine.CoreRegistry;
 import org.terasology.engine.Time;
 import org.terasology.entitySystem.entity.EntityManager;
@@ -70,7 +69,7 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
     private Set<Vector3i> activatedPressurePlates = Sets.newHashSet();
     private PriorityQueue<BlockAtLocationDelayedAction> delayedActions = new PriorityQueue<BlockAtLocationDelayedAction>(11, new ExecutionTimeOrdering());
 
-    private TObjectLongMap<ImmutableBlockLocation> gateLastSignalChangeTime = new TObjectLongHashMap<>();
+    private TObjectLongMap<Vector3i> gateLastSignalChangeTime = new TObjectLongHashMap<>();
 
     private Block lampTurnedOff;
     private Block lampTurnedOn;
@@ -103,7 +102,7 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
     private void deleteOldSignalChangesForGates() {
         long worldTime = time.getGameTimeInMs();
         if (lastSignalCleanupExecuteTime + SIGNAL_CLEANUP_INTERVAL < worldTime) {
-            final TObjectLongIterator<ImmutableBlockLocation> iterator = gateLastSignalChangeTime.iterator();
+            final TObjectLongIterator<Vector3i> iterator = gateLastSignalChangeTime.iterator();
             while (iterator.hasNext()) {
                 iterator.advance();
                 if (iterator.value() + GATE_MINIMUM_SIGNAL_CHANGE_INTERVAL < worldTime) {
@@ -121,7 +120,7 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
                 && action.executeTime <= worldTime) {
             action = delayedActions.poll();
 
-            final Vector3i actionLocation = action.blockLocation.toVector3i();
+            final Vector3i actionLocation = action.blockLocation;
             if (worldProvider.isBlockRelevant(actionLocation)) {
                 final Block block = worldProvider.getBlock(actionLocation);
                 final BlockFamily blockFamily = block.getBlockFamily();
@@ -135,15 +134,15 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
                 } else if (blockFamily == signalOrGate || blockFamily == signalAndGate
                         || blockFamily == signalXorGate) {
                     if (processOutputForNormalGate(blockEntity)) {
-                        gateLastSignalChangeTime.put(new ImmutableBlockLocation(actionLocation), worldTime);
+                        gateLastSignalChangeTime.put(new Vector3i(actionLocation), worldTime);
                     }
                 } else if (blockFamily == signalNandGate) {
                     if (processOutputForRevertedGate(blockEntity)) {
-                        gateLastSignalChangeTime.put(new ImmutableBlockLocation(actionLocation), worldTime);
+                        gateLastSignalChangeTime.put(new Vector3i(actionLocation), worldTime);
                     }
                 } else if (blockFamily == signalSetResetGate) {
                     if (processOutputForSetResetGate(blockEntity)) {
-                        gateLastSignalChangeTime.put(new ImmutableBlockLocation(actionLocation), worldTime);
+                        gateLastSignalChangeTime.put(new Vector3i(actionLocation), worldTime);
                     }
                 } else if (block == signalButton) {
                     stopProducingSignal(blockEntity);
@@ -427,7 +426,7 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
             // GATE_MINIMUM_SIGNAL_CHANGE_INTERVAL from the time it has last changed, whichever is later
             SignalDelayedActionComponent delayedAction = new SignalDelayedActionComponent();
             long whenToLookAt;
-            final ImmutableBlockLocation location = new ImmutableBlockLocation(entity.getComponent(BlockComponent.class).getPosition());
+            final Vector3i location = new Vector3i(entity.getComponent(BlockComponent.class).getPosition());
             if (gateLastSignalChangeTime.containsKey(location)) {
                 whenToLookAt = gateLastSignalChangeTime.get(location) + GATE_MINIMUM_SIGNAL_CHANGE_INTERVAL;
             } else {
@@ -462,10 +461,10 @@ public class SignalSwitchBehaviourSystem extends BaseComponentSystem implements 
 
     private class BlockAtLocationDelayedAction {
         private long executeTime;
-        private ImmutableBlockLocation blockLocation;
+        private Vector3i blockLocation;
 
         private BlockAtLocationDelayedAction(Vector3i location, long executeTime) {
-            this.blockLocation = new ImmutableBlockLocation(location);
+            this.blockLocation = new Vector3i(location);
             this.executeTime = executeTime;
         }
 

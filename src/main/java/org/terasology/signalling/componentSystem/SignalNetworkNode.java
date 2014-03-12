@@ -1,12 +1,12 @@
 package org.terasology.signalling.componentSystem;
 
-import org.terasology.blockNetwork.NetworkNode;
+import org.terasology.blockNetwork.SidedLocationNetworkNode;
 import org.terasology.math.Vector3i;
 
 /**
  * @author Marcin Sciesinski <marcins78@gmail.com>
  */
-public class SignalNetworkNode extends NetworkNode {
+public class SignalNetworkNode extends SidedLocationNetworkNode {
     public enum Type { PRODUCER, CONSUMER, CONDUCTOR };
 
     private Type type;

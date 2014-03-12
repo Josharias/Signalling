@@ -8,10 +8,7 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.manager.GUIManager;
-import org.terasology.registry.CoreRegistry;
 import org.terasology.signalling.components.SignalTimeDelayComponent;
-import org.terasology.signalling.gui.UIDelayConfiguration;
 import org.terasology.world.block.BlockComponent;
 
 /**
@@ -23,12 +20,12 @@ public class SignallingConfigurationSystem extends BaseComponentSystem {
 
     @Override
     public void initialise() {
-        CoreRegistry.get(GUIManager.class).registerWindow("signalling:delayConfiguration", UIDelayConfiguration.class);
+        //CoreRegistry.get(GUIManager.class).registerWindow("signalling:delayConfiguration", UIDelayConfiguration.class);
     }
 
     @ReceiveEvent(components = {BlockComponent.class, SignalTimeDelayComponent.class})
     public void openDelayConfiguration(ActivateEvent event, EntityRef entity) {
-        UIDelayConfiguration delayConfigurationScreen = (UIDelayConfiguration) CoreRegistry.get(GUIManager.class).openWindow("signalling:delayConfiguration");
-        delayConfigurationScreen.attachToEntity("Delay configuration", entity);
+        //UIDelayConfiguration delayConfigurationScreen = (UIDelayConfiguration) CoreRegistry.get(GUIManager.class).openWindow("signalling:delayConfiguration");
+       // delayConfigurationScreen.attachToEntity("Delay configuration", entity);
     }
 }
